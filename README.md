@@ -59,7 +59,7 @@ pip install -r requirements.txt
 
 3. Ejecutar el sistema:
 ```bash
-python 
+python fastapi dev
 ```
 
 ## 📊 Funcionalidades Principales
