@@ -9,13 +9,17 @@ from sqlmodel import SQLModel, Field
 from typing import Dict, Any, Optional
 import uuid
 
-class User(SQLModel, table=True):
-    user_id: Optional[str] = Field(default_factory=lambda: str(uuid.uuid4()), primary_key=True, index=True)
+class UserBase(SQLModel):
     name: str = Field(index=True)
     age: int = Field(ge=13, le=25, description="Edad del usuario (entre 13 y 25 años)")
     context: str = Field(description="Contexto de vulnerabilidad del usuario")
     registration_date: datetime = Field(default_factory=datetime.now)
     #emotional_profile: Optional[Dict[str, Any]] = Field(default_factory=lambda: None, sa_column_kwargs={"nullable": True})
+
+class User(UserBase, table=True):
+    user_id: Optional[str] = Field(default_factory=lambda: str(uuid.uuid4()), primary_key=True, index=True)
+    # Field(foreign_key="other_table.id")  # Ejemplo de clave foránea si es necesario
+
 
 #class UserCreate(User):
 #    """
