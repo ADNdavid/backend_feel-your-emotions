@@ -4,7 +4,6 @@ Representa a un joven que utiliza la plataforma para monitoreo emocional.
 """
 
 from datetime import datetime
-from pydantic import BaseModel
 from sqlmodel import SQLModel, Field
 from typing import Dict, Any, Optional
 import uuid
