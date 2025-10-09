@@ -1,5 +1,5 @@
 """
-Modelo de Usuario para el sistema.
+Modelo de Usuario para el sistema de monitoreo emocional.
 Representa a un joven que utiliza la plataforma para monitoreo emocional.
 """
 

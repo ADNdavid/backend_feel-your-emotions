@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException, status
-from ..models.survey import Survey, SurveyBase
+from ..models.survey import Survey, SurveyBase, get_all_questions
 from ..models.user import User
 from db import session_dependency
 from sqlmodel import select
@@ -15,16 +15,7 @@ async def get_survey_questions():
     Returns:
         Dict[str, str]: Diccionario con las preguntas de la encuesta
     """
-    questions = {
-        'mood': "¿Cómo te sientes hoy en una escala del 1 al 5?",
-        'anxiety': "¿Qué tan ansioso/a te sientes? (1-5)",
-        'sleep': "¿Cómo calificarías tu calidad de sueño? (1-5)",
-        'social': "¿Te sentiste conectado/a con otros hoy? (1-5)",
-        'energy': "¿Cuál es tu nivel de energía? (1-5)",
-        'stress': "¿Qué tan estresado/a te sientes? (1-5)",
-        'hopeful': "¿Qué tan esperanzado/a te sientes sobre el futuro? (1-5)"
-    }
-    return questions
+    return get_all_questions()
 
 @router.post("/survey", status_code=status.HTTP_201_CREATED, response_model=Survey)
 async def create_survey(survey_data: SurveyBase, session: session_dependency):

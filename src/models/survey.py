@@ -1,11 +1,11 @@
 """
-Modelo de Encuesta para el sistema EmoTracker.
+Modelo de Encuesta para el sistema de monitoreo emocional.
 Representa las encuestas de seguimiento emocional de los usuarios.
 """
 
 from enum import Enum
 from datetime import datetime
-from typing import Dict, Any, List, Optional
+from typing import Dict
 from sqlmodel import SQLModel, Field
 import uuid
 
