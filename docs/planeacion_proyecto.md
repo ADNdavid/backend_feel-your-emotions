@@ -96,8 +96,8 @@ Diseñar y desarrollar una plataforma web que permita monitorear el estado emoci
 ```
 src/
 ├── models/         # Clases User, Survey, EmotionalProfile
-├── services/       # Lógica de negocio (UserService, SurveyService)
-├── utils/          # Helpers (csv_handler, validators)
+├── services/       # Lógica de negocio 
+├── utils/          # Helpers
 ├── routers/        # Controladores para peticiones HTTP
 └── analysis/       # Scripts de análisis y visualización
 
@@ -113,7 +113,7 @@ data/
 - **NumPy**: Cálculos numéricos
 - **Matplotlib/Seaborn**: Visualizaciones
 - **CSV**: Almacenamiento temporal
-- **fastAPI**: 
+- **fastAPI**: Construcción de API
 
 ### 8. METODOLOGÍA DE DESARROLLO
 
