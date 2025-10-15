@@ -230,21 +230,21 @@ class EmotionalDataAnalyzer:
             values (List[float]): Lista de valores
             
         Returns:
-            str: 'improving', 'declining', o 'stable'
+            str: 'mejorando', 'empeorando', o 'estable'
         """
         if len(values) < 2:
-            return 'stable'
+            return 'estable'
         
         # Usar correlación con índices para determinar tendencia
         indices = list(range(len(values)))
         correlation = np.corrcoef(indices, values)[0, 1]
         
         if correlation > 0.3:
-            return 'improving'
+            return 'mejorando'
         elif correlation < -0.3:
-            return 'declining'
+            return 'empeorando'
         else:
-            return 'stable'
+            return 'estable'
     
     def analyze_correlations(self) -> pd.DataFrame:
         """
@@ -373,9 +373,9 @@ class EmotionalDataAnalyzer:
             'promedio_estres': user_analysis['avg_stress'].mean(),
             'promedio_esperanza': user_analysis['avg_hopeful'].mean(),
             'total_crisis': user_analysis['crisis_count'].sum(),
-            'usuarios_trend_mejorando': len(user_analysis[user_analysis['mood_trend'] == 'improving']),
-            'usuarios_trend_empeorando': len(user_analysis[user_analysis['mood_trend'] == 'declining']),
-            'usuarios_trend_estable': len(user_analysis[user_analysis['mood_trend'] == 'stable']),
+            'usuarios_trend_mejorando': len(user_analysis[user_analysis['mood_trend'] == 'mejorando']),
+            'usuarios_trend_empeorando': len(user_analysis[user_analysis['mood_trend'] == 'empeorando']),
+            'usuarios_trend_estable': len(user_analysis[user_analysis['mood_trend'] == 'estable']),
         }
         
         summary_df = pd.DataFrame([summary])
