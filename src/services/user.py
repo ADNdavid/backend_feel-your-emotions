@@ -49,6 +49,7 @@ class UserService:
                     'name': user.name,
                     'age': user.age,
                     'context': user.context,
+                    'gender': user.gender,
                     'registration_date': user.registration_date.isoformat() if user.registration_date else None
                 }
                 data.append(user_dict)
@@ -56,7 +57,7 @@ class UserService:
             df = pd.DataFrame(data)
             df.to_csv(self.users_file, index=False)
     
-    def register_user(self, name: str, age: int, context: str) -> User:
+    def register_user(self, name: str, age: int, context: str, gender: str) -> User:
         """
         Registra un nuevo usuario en el sistema.
         
@@ -64,7 +65,7 @@ class UserService:
             name (str): Nombre completo del usuario
             age (int): Edad del usuario (entre 13 y 25 años)
             context (str): Contexto de vulnerabilidad
-            
+            gender (str): Género del usuario
         Returns:
             User: Usuario creado y registrado
             
@@ -84,7 +85,8 @@ class UserService:
             user_data = {
                 "name": name.strip(),
                 "age": age,
-                "context": context.strip()
+                "context": context.strip(),
+                "gender": gender.strip()
             }
             
             user = User(**user_data)
@@ -161,6 +163,7 @@ class UserService:
             'user_id': row['user_id'],
             'name': row['name'],
             'age': int(row['age']),
+            'gender': row['gender'],
             'context': row['context'],
             'registration_date': row['registration_date'],
             'emotional_profile': emotional_profile
@@ -211,8 +214,12 @@ class UserService:
                 return False
             
             # Validar y actualizar campos permitidos
-            valid_fields = {'name', 'age', 'context'}
+            valid_fields = {'name', 'age', 'context', 'gender'}
             update_data = {k: v for k, v in kwargs.items() if k in valid_fields}
+            
+            # Validar y limpiar valores
+            if 'gender' in update_data and update_data['gender']:
+                update_data['gender'] = update_data['gender'].strip()
             
             for key, value in update_data.items():
                 setattr(user, key, value)
@@ -371,6 +378,7 @@ class UserService:
                     'name': user.name,
                     'age': user.age,
                     'context': user.context,
+                    'gender': user.gender,
                     'registration_date': user.registration_date.isoformat() if user.registration_date else None
                 })
             

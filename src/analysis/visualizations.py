@@ -12,14 +12,14 @@ import os
 import textwrap
 from datetime import datetime
 
-#from .data_analyzer import EmotionalDataAnalyzer
+from .data_analyzer import EmotionalDataAnalyzer
 
 # Agregar el directorio raíz al path para permitir importaciones absolutas
-import sys
-root_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-if root_dir not in sys.path:
-    sys.path.append(root_dir)
-from src.analysis.data_analyzer import EmotionalDataAnalyzer
+#import sys
+#root_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+#if root_dir not in sys.path:
+#    sys.path.append(root_dir)
+#from src.analysis.data_analyzer import EmotionalDataAnalyzer
 
 class VisualizationGenerator:
     """
@@ -198,6 +198,87 @@ class VisualizationGenerator:
         print(f"✅ Gráfico de tendencias guardado: {filepath}")
         return filepath
     
+    def create_gender_analysis_plot(self) -> str:
+        """
+        Crea visualizaciones específicas de análisis por género.
+        
+        Returns:
+            str: Ruta del archivo generado
+        """
+        users_df, surveys_df = self.analyzer.load_data()
+        gender_analysis = self.analyzer.analyze_gender_patterns()
+        
+        if users_df.empty or 'gender' not in users_df.columns:
+            print("❌ No hay datos suficientes para análisis por género")
+            return ""
+        
+        fig, axes = plt.subplots(2, 2, figsize=(16, 12))
+        
+        # Gráfico 1: Distribución por género
+        gender_counts = pd.Series(gender_analysis['distribution'])
+        gender_labels = [textwrap.fill(str(label), width=15) for label in gender_counts.index]
+        _, texts, autotexts = axes[0, 0].pie(
+            gender_counts.values,
+            labels=gender_labels,
+            colors=plt.cm.Set3(np.linspace(0, 1, len(gender_counts))),
+            autopct='%1.1f%%',
+            startangle=90
+        )
+        axes[0, 0].set_title('Distribución por Género')
+        
+        # Gráfico 2: Edad promedio por género
+        if 'age_by_gender' in gender_analysis:
+            age_data = pd.DataFrame(gender_analysis['age_by_gender']).T
+            age_data['mean'].plot(
+                kind='bar',
+                yerr=age_data['max'] - age_data['min'],
+                ax=axes[0, 1],
+                color='skyblue',
+                capsize=5
+            )
+            axes[0, 1].set_title('Edad Promedio por Género')
+            axes[0, 1].set_ylabel('Edad')
+            
+        # Gráfico 3: Bienestar promedio por género
+        if 'wellness_by_gender' in gender_analysis:
+            wellness_data = pd.DataFrame(gender_analysis['wellness_by_gender'])
+            wellness_metrics = pd.DataFrame({
+                'Bienestar': wellness_data.loc['wellness_score', 'mean'],
+                'Estado de Ánimo': wellness_data.loc['mood', 'mean']
+            })
+            wellness_metrics.plot(
+                kind='bar',
+                ax=axes[1, 0],
+                color=['green', 'orange']
+            )
+            axes[1, 0].set_title('Indicadores de Bienestar por Género')
+            axes[1, 0].set_ylabel('Puntuación Promedio')
+        
+        # Gráfico 4: Tasa de crisis por género
+        if 'crisis_by_gender' in gender_analysis:
+            crisis_data = pd.DataFrame(gender_analysis['crisis_by_gender'])
+            if 'users_with_crisis' in crisis_data.columns:
+                crisis_rate = (crisis_data['users_with_crisis'] / 
+                             crisis_data['total_users'] * 100).round(1)
+                crisis_rate.plot(
+                    kind='bar',
+                    ax=axes[1, 1],
+                    color='red',
+                    alpha=0.7
+                )
+                axes[1, 1].set_title('Tasa de Crisis por Género')
+                axes[1, 1].set_ylabel('Porcentaje de Usuarios (%)')
+        
+        plt.tight_layout()
+        
+        filename = f"gender_analysis_{datetime.now().strftime('%Y%m%d_%H%M%S')}.{self.output_format}"
+        filepath = os.path.join(self.output_path, filename)
+        plt.savefig(filepath, dpi=300, bbox_inches='tight', format=self.output_format)
+        plt.close()
+        
+        print(f"✅ Análisis por género guardado: {filepath}")
+        return filepath
+        
     def create_correlation_heatmap(self) -> str:
         """
         Crea un mapa de calor de correlaciones entre indicadores emocionales.
@@ -342,9 +423,13 @@ class VisualizationGenerator:
         
         fig, axes = plt.subplots(2, 2, figsize=(16, 12))
         
-        # Gráfico 1: Distribución por contexto
-        if 'context' in users_df.columns:
+        # Gráfico 1: Distribución por contexto y género
+        if 'context' in users_df.columns and 'gender' in users_df.columns:
+            # Panel izquierdo: Distribución por contexto
             context_counts = users_df['context'].value_counts()
+            
+            # Panel derecho: Distribución por género
+            gender_counts = users_df['gender'].value_counts()
             
             # Inicializar la paleta de colores si es necesario
             if not self.context_colors:
@@ -531,7 +616,8 @@ class VisualizationGenerator:
             self.create_trend_analysis_plot,
             self.create_correlation_heatmap,
             self.create_risk_analysis_plot,
-            self.create_user_context_analysis
+            self.create_user_context_analysis,
+            self.create_gender_analysis_plot
         ]
         
         for method in visualization_methods:

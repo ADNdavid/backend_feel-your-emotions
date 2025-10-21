@@ -94,10 +94,14 @@ class EmotionalDataAnalyzer:
                 'edad_max': users_df['age'].max() if 'age' in users_df.columns else 0
             }
             
-            # Distribución por contexto
+            # Distribución por contexto y género
             if 'context' in users_df.columns:
                 context_counts = users_df['context'].value_counts().to_dict()
                 stats['usuarios']['contextos'] = context_counts
+            
+            if 'gender' in users_df.columns:
+                gender_counts = users_df['gender'].value_counts().to_dict()
+                stats['usuarios']['generos'] = gender_counts
         
         # Estadísticas de encuestas
         if not surveys_df.empty:
@@ -246,6 +250,55 @@ class EmotionalDataAnalyzer:
         else:
             return 'estable'
     
+    def analyze_gender_patterns(self) -> Dict[str, Any]:
+        """
+        Analiza patrones específicos por género.
+        
+        Returns:
+            dict: Análisis de patrones por género
+        """
+        users_df, surveys_df = self.load_data()
+        
+        if users_df.empty or 'gender' not in users_df.columns:
+            return {}
+            
+        gender_analysis = {
+            'distribution': users_df['gender'].value_counts().to_dict(),
+            'age_by_gender': {},
+            'wellness_by_gender': {},
+            'crisis_by_gender': {}
+        }
+        
+        # Análisis de edad por género
+        age_stats = users_df.groupby('gender')['age'].agg(['mean', 'median', 'min', 'max']).round(1)
+        gender_analysis['age_by_gender'] = age_stats.to_dict('index')
+        
+        # Análisis de bienestar por género
+        if not surveys_df.empty:
+            surveys_with_gender = surveys_df.merge(
+                users_df[['user_id', 'gender']], 
+                on='user_id', 
+                how='left'
+            )
+            
+            wellness_stats = surveys_with_gender.groupby('gender').agg({
+                'wellness_score': 'mean',
+                'mood': 'mean',
+                'crisis_alert': ['sum', 'mean']
+            }).round(2)
+            
+            gender_analysis['wellness_by_gender'] = wellness_stats.to_dict('index')
+            
+            # Calcular tasas de crisis por género
+            total_users_by_gender = users_df['gender'].value_counts()
+            users_with_crisis = surveys_with_gender[surveys_with_gender['crisis_alert'] > 0]['user_id'].nunique()
+            gender_analysis['crisis_by_gender'] = {
+                'total_users': total_users_by_gender.to_dict(),
+                'users_with_crisis': users_with_crisis
+            }
+        
+        return gender_analysis
+    
     def analyze_correlations(self) -> pd.DataFrame:
         """
         Analiza correlaciones entre variables emocionales.
@@ -307,10 +360,10 @@ class EmotionalDataAnalyzer:
                 'avg_mood_high_risk': high_risk_users['avg_mood'].mean(),
                 'avg_crisis_rate': high_risk_users['crisis_rate'].mean(),
                 'common_contexts': high_risk_users['context'].value_counts().to_dict(),
+                'gender_distribution': high_risk_users['gender'].value_counts().to_dict() if 'gender' in high_risk_users.columns else {},
                 'trend_distribution': high_risk_users['mood_trend'].value_counts().to_dict()
-            }
-        
-        return patterns
+            }        
+            return patterns
     
     def generate_comprehensive_report(self) -> Dict[str, Any]:
         """
