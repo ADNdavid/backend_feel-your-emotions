@@ -15,7 +15,7 @@ Desarrollar una herramienta tecnológica que permita:
 
 - **Backend**: Python 3.8+
 - **Análisis de Datos**: Pandas, NumPy, Matplotlib, Seaborn, FastAPI
-- **Almacenamiento**: CSV (fase inicial)
+- **Almacenamiento**: CSV (fase inicial y respaldo), mySQL
 - **Control de Versiones**: Git & GitHub
 
 ## 📁 Estructura del Proyecto
@@ -82,6 +82,10 @@ python fastapi dev
 - [ ] Recomendaciones personalizadas
 - [ ] Interfaz web completa
 - [ ] Integración con bases de datos
+
+## 🌐 Enlaces 
+- **Repositorio Frontend**: [repo](https://github.com/zorany26/frontend_feel-your-emotions)
+- **Sitio en vivo**: [GitHub Pages]()
 
 ## 📈 Estado del Proyecto
 

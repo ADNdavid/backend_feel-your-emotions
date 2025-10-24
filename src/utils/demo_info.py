@@ -5,6 +5,7 @@ Utilidad para generar datos de demostración en el sistema.
 from typing import List
 import random
 from datetime import datetime, timedelta
+from faker import Faker
 from ..models.user import User, UserBase
 from ..models.survey import Survey, SurveyBase, SurveyType
 from ..services.user import UserService
@@ -25,23 +26,43 @@ class DemoGenerator:
         print("Creando datos de prueba para demostrar el sistema...")
         
         try:
-            # Crear usuarios de prueba
-            demo_users = [
-                ("Ana García", 17, "Estudiante en situación de vulnerabilidad económica"),
-                ("Carlos Rodríguez", 20, "Joven en contexto de violencia familiar"),
-                ("María López", 19, "Adolescente con ansiedad social"),
-                ("Diego Martínez", 22, "Universitario con depresión"),
-                ("Sofía Hernández", 18, "Joven madre soltera")
+            vulnerability_context = [
+                "Violencia familiar y abuso doméstico",
+                "Abuso de sustancias (drogas, alcohol, etc.)",
+                "Condiciones de pobreza y marginación",
+                "Baja autoestima y problemas de salud mental (ansiedad, depresión)",
+                "Falta de acceso a educación de calidad",
+                "Exclusión social y discriminación (por género, orientación sexual, raza, etc.)",
+                "Maternidad/paternidad temprana y embarazos adolescentes no deseados",
+                "Violencia escolar (bullying, acoso escolar)",
+                "Problemas de adaptación social (dificultad para hacer amigos, aislamiento)",
+                "Falta de apoyo emocional o parental",
+                "Expresión de identidad de género y orientación sexual no aceptada por la familia o comunidad",
+                "Desigualdad de oportunidades laborales y educativas",
+                "Acceso limitado a servicios de salud (física y mental)",
+                "Exposición a contenidos dañinos (pornografía, violencia, etc.) en internet",
+                "Migración forzada y desplazamiento forzoso",
+                "Criminalidad juvenil y pertenencia a pandillas",
+                "Abusos sexuales y explotación",
+                "Riesgo de involucrarse en conductas delictivas o peligrosas",
+                "Desempleo juvenil y falta de perspectivas laborales",
+                "Dificultades para acceder a tecnología y recursos digitales (brecha digital)"
             ]
-            
+            # Crear usuarios de prueba
+            demo_users = []
+            for _ in range(random.randint(5, 20)):
+                fake = Faker(locale='es_CO')
+                demo_users.append((fake.name(), random.randint(13, 25), random.choice(vulnerability_context), fake.passport_gender()))
+                            
             print("\n👥 Registrando usuarios de prueba...")
             created_users = []
-            for name, age, context in demo_users:
+            for name, age, context, gender in demo_users:
                 try:
                     user_data = {
                         "name": name,
                         "age": age,
-                        "context": context
+                        "context": context,
+                        "gender": gender
                     }
                     user = self.user_service.register_user(**user_data)
                     created_users.append(user)

@@ -12,6 +12,7 @@ class UserBase(SQLModel):
     name: str = Field(description="Nombre completo del usuario")
     age: int = Field(ge=13, le=25, description="Edad del usuario (entre 13 y 25 años)")
     context: str = Field(description="Contexto de vulnerabilidad del usuario")
+    gender: str = Field(default=None, description="Género del usuario")
 
 class User(UserBase, table=True):
     user_id: Optional[str] = Field(default_factory=lambda: str(uuid.uuid4()), primary_key=True, index=True)
@@ -26,17 +27,19 @@ class UserCreate(User):
         name (str): Nombre completo del usuario
         age (int): Edad del usuario
         context (str): Contexto de vulnerabilidad del usuario
+        gender (str): Género del usuario
         registration_date (datetime): Fecha de registro en el sistema
     """
     
-    def __init__(self, name: str, age: int, context: str):
+    def __init__(self, name: str, age: int, context: str, gender: str):
         """
         Inicializa un nuevo usuario.
         
         Args:
             name (str): Nombre completo del usuario
             age (int): Edad del usuario (debe estar entre 13 y 25 años)
-            context (str): Contexto de vulnerabilidad        
+            context (str): Contexto de vulnerabilidad 
+            gender (str): Género del usuario
         Raises:
             ValueError: Si la edad no está en el rango válido
         """
@@ -47,6 +50,7 @@ class UserCreate(User):
         self.name = name.strip()
         self.age = age
         self.context = context.strip()
+        self.gender = gender.strip() if gender else None
     
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> 'User':
@@ -63,6 +67,7 @@ class UserCreate(User):
             name=data['name'],
             age=data['age'],
             context=data['context'],
+            gender=data['gender']
         )
         user.user_id = data['user_id']
         user.registration_date = data['registration_date']
