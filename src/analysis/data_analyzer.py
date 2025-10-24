@@ -44,13 +44,80 @@ class EmotionalDataAnalyzer:
         # Crear directorios si no existen
         os.makedirs(output_path, exist_ok=True)
     
+    def _ensure_csv_files(self) -> bool:
+        """
+        Asegura que los archivos CSV existan y estén actualizados.
+        Genera los archivos si no existen o actualiza si hay cambios en la base de datos.
+        
+        Returns:
+            bool: True si los archivos están listos para usar, False si hubo errores
+        """
+        try:
+            # Crear directorio si no existe
+            os.makedirs(self.data_path, exist_ok=True)
+            
+            users_file = os.path.join(self.data_path, "users.csv")
+            surveys_file = os.path.join(self.data_path, "surveys.csv")
+            
+            # Obtener usuarios y encuestas de los servicios
+            users = self.user_service.get_all_users()
+            surveys = self.survey_service.get_all_surveys()
+            
+            # Convertir a DataFrames
+            users_data = []
+            for user in users:
+                users_data.append({
+                    'user_id': user.user_id,
+                    'name': user.name,
+                    'age': user.age,
+                    'context': user.context,
+                    'gender': user.gender
+                })
+            
+            surveys_data = []
+            for survey in surveys:
+                surveys_data.append({
+                    'survey_id': survey.survey_id,
+                    'user_id': survey.user_id,
+                    'date': survey.date,
+                    'mood': survey.mood,
+                    'wellness_score': survey.wellness_score,
+                    'crisis_alert': survey.crisis_alert,
+                    'anxiety': survey.anxiety,
+                    'sleep': survey.sleep,
+                    'social': survey.social,
+                    'energy': survey.energy,
+                    'stress': survey.stress,
+                    'hopeful': survey.hopeful,
+                    'survey_type': survey.survey_type
+                })
+            
+            # Guardar a CSV
+            if users_data:
+                pd.DataFrame(users_data).to_csv(users_file, index=False)
+                print(f"✅ Archivo de usuarios actualizado: {len(users_data)} registros")
+            
+            if surveys_data:
+                pd.DataFrame(surveys_data).to_csv(surveys_file, index=False)
+                print(f"✅ Archivo de encuestas actualizado: {len(surveys_data)} registros")
+            
+            return True
+            
+        except Exception as e:
+            print(f"❌ Error al generar/actualizar archivos CSV: {str(e)}")
+            return False
+    
     def load_data(self) -> Tuple[pd.DataFrame, pd.DataFrame]:
         """
         Carga los datos de usuarios y encuestas.
+        Si los archivos CSV no existen o están desactualizados, los genera.
         
         Returns:
             Tuple[pd.DataFrame, pd.DataFrame]: DataFrames de usuarios y encuestas
         """
+        # Asegurar que los archivos existan y estén actualizados
+        self._ensure_csv_files()
+        
         users_file = os.path.join(self.data_path, "users.csv")
         surveys_file = os.path.join(self.data_path, "surveys.csv")
         
@@ -60,11 +127,15 @@ class EmotionalDataAnalyzer:
         if os.path.exists(users_file):
             users_df = pd.read_csv(users_file)
             print(f"✅ Cargados {len(users_df)} usuarios")
+        else:
+            print("⚠️ No se encontró el archivo de usuarios")
         
         if os.path.exists(surveys_file):
             surveys_df = pd.read_csv(surveys_file)
             surveys_df['date'] = pd.to_datetime(surveys_df['date'])
             print(f"✅ Cargadas {len(surveys_df)} encuestas")
+        else:
+            print("⚠️ No se encontró el archivo de encuestas")
         
         return users_df, surveys_df
     
@@ -395,6 +466,17 @@ class EmotionalDataAnalyzer:
         print(f"✅ Reporte guardado en: {report_file}")
         
         return report
+    
+    def force_update_csv_files(self) -> bool:
+        """
+        Fuerza la actualización de los archivos CSV desde la base de datos.
+        Útil cuando se sabe que ha habido cambios en la base de datos.
+        
+        Returns:
+            bool: True si la actualización fue exitosa, False si hubo errores
+        """
+        print("🔄 Forzando actualización de archivos CSV...")
+        return self._ensure_csv_files()
     
     def export_analysis_summary(self) -> str:
         """
