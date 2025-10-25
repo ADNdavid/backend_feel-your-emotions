@@ -528,3 +528,8 @@ class EmotionalDataAnalyzer:
         
         print(f"✅ Resumen exportado a: {export_file}")
         return export_file
+    
+    def convert_numpy(self, obj):
+        if isinstance(obj, np.generic):
+            return obj.item()  # Convierte np.float64 -> float, np.int64 -> int, etc.
+        raise TypeError(f"Tipo no serializable: {type(obj)}")

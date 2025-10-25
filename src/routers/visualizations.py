@@ -1,7 +1,9 @@
-from fastapi import APIRouter, Response, Query
+from fastapi import APIRouter, Response, Query, HTTPException, status
 from fastapi.responses import FileResponse
 from ..analysis.visualizations import VisualizationGenerator
 from ..analysis.data_analyzer import EmotionalDataAnalyzer
+from typing import Dict, Any
+import json
 
 # Constantes reutilizables
 _MSG_NO_DATA = "No hay datos suficientes para generar la visualización"
@@ -74,3 +76,16 @@ async def get_visualization(
         media_type=_MEDIA_SVG,
         headers={"Content-Disposition": f"inline; filename={filename}.svg"}
     )
+
+@router.get("/statistics")
+async def get_descriptive_statistics():
+    """
+    Endpoint para obtener estadísticas descriptivas de los datos emocionales.
+    
+    Returns:
+        Response: Estadísticas descriptivas en formato JSON
+    """
+    analyzer = EmotionalDataAnalyzer()
+    stats_text = analyzer.generate_descriptive_statistics()
+    stats_json_text = json.dumps(stats_text, default=analyzer.convert_numpy)
+    return json.loads(stats_json_text)

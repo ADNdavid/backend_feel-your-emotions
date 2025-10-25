@@ -110,5 +110,5 @@ async def generate_random_users():
     """
     #Crear el generador de datos
     demo = DemoGenerator()
-    demo.generate_demo_data()
-    return {"detail": "Usuarios de demostración generados exitosamente"}
+    count_users_generated = demo.generate_demo_data()
+    return {"detail": "Usuarios de demostración generados exitosamente", "count": count_users_generated}
