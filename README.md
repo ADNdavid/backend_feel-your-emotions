@@ -40,6 +40,8 @@ root/
 
 ## 🚀 Instalación y Uso
 
+❗Se requiere que previamente se tenga instalado XAMPP con mySQL, la base de datos debe llamarse _feel_your_emotions_.
+
 1. Clonar el repositorio:
 ```bash
 git clone https://github.com/ADNdavid/backend_feel-your-emotions
@@ -59,7 +61,7 @@ pip install -r requirements.txt
 
 3. Ejecutar el sistema:
 ```bash
-python fastapi dev
+fastapi dev
 ```
 
 ## 📊 Funcionalidades Principales
