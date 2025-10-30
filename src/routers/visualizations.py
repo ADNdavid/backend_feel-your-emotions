@@ -25,6 +25,7 @@ class VisualizationType(str, Enum):
     RISK_ANALYSIS = "risk-analysis"
     CONTEXT_ANALYSIS = "context-analysis"
     GENDER_ANALYSIS = "gender-analysis"
+    EMOTIONAL_STATE = "emotional-state"
 
 @router.get("/visualization/{viz_type}", response_class=Response)
 async def get_visualization(
@@ -58,7 +59,9 @@ async def get_visualization(
         VisualizationType.CONTEXT_ANALYSIS: 
             (viz_generator.create_user_context_analysis, "context_analysis"),
         VisualizationType.GENDER_ANALYSIS:
-            (viz_generator.create_gender_analysis_plot, "gender_analysis")
+            (viz_generator.create_gender_analysis_plot, "gender_analysis"),
+        VisualizationType.EMOTIONAL_STATE:
+            (viz_generator.create_avg_emotional_state_by_context, "emotional-state")
     }
     
     # Obtener el método y nombre de archivo correspondiente

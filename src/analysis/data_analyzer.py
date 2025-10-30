@@ -288,7 +288,7 @@ class EmotionalDataAnalyzer:
                     'avg_stress': wellness_indicators['stress'],
                     'avg_hopeful': wellness_indicators['hopeful'],
                     'crisis_count': user_surveys['crisis_alert'].sum(),
-                    'crisis_rate': (user_surveys['crisis_alert'].sum() / len(user_surveys)) * 100,
+                    'crisis_rate': (user_surveys['crisis_alert'].sum() / len(user_surveys)) * 100 if len(user_surveys) > 0 else 0,
                     'mood_trend': self._calculate_trend(user_surveys['mood'].tolist() if 'mood' in user_surveys else []),
                     'last_survey': user_surveys['date'].max(),
                     'days_since_last': (datetime.now() - user_surveys['date'].max()).days

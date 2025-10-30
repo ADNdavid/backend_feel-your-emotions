@@ -4,11 +4,14 @@ Crea gráficos y dashboards para análisis de datos emocionales.
 """
 
 import matplotlib.pyplot as plt
+import matplotlib.dates as mdates
+import matplotlib.colors as mcolors
 import seaborn as sns
 import pandas as pd
 import numpy as np
 from typing import Optional, List, Dict, Any
 import os
+import math
 import textwrap
 from datetime import datetime
 
@@ -98,7 +101,7 @@ class VisualizationGenerator:
         # Distribución de mood
         if 'mood' in surveys_df.columns:
             surveys_df['mood'].hist(bins=5, ax=ax1, alpha=0.7, color='skyblue')
-            ax1.set_title('Distribución de Estados de Ánimo')
+            ax1.set_title('Distribución de Estados de Ánimo', fontsize=18)
             ax1.set_xlabel('Puntuación de Ánimo (1-5)')
             ax1.set_ylabel('Frecuencia')
             ax1.grid(True, alpha=0.3)
@@ -112,7 +115,7 @@ class VisualizationGenerator:
         # Distribución de wellness_score
         if 'wellness_score' in surveys_df.columns:
             surveys_df['wellness_score'].hist(bins=10, ax=ax2, alpha=0.7, color='lightgreen')
-            ax2.set_title('Distribución de Puntuaciones de Bienestar')
+            ax2.set_title('Distribución de Puntuaciones de Bienestar', fontsize=18)
             ax2.set_xlabel('Puntuación de Bienestar (1-5)')
             ax2.set_ylabel('Frecuencia')
             ax2.grid(True, alpha=0.3)
@@ -145,6 +148,7 @@ class VisualizationGenerator:
         """
         trends_df = self.analyzer.analyze_mood_trends(days)
         
+        date_format = '%d %b %Y'
         if trends_df.empty:
             print("❌ No hay datos suficientes para análisis de tendencias")
             return ""
@@ -153,13 +157,14 @@ class VisualizationGenerator:
         
         # Convertir fecha a datetime para mejor visualización
         trends_df['date'] = pd.to_datetime(trends_df['date'])
-        
+        print(f"trends_df:\n{trends_df}")
         # Gráfico 1: Tendencia de ánimo promedio
         if 'mood_mean' in trends_df.columns:
             axes[0, 0].plot(trends_df['date'], trends_df['mood_mean'], 
                            marker='o', linewidth=2, color='blue')
-            axes[0, 0].set_title('Tendencia del Estado de Ánimo Promedio')
+            axes[0, 0].set_title('Tendencia del Estado de Ánimo Promedio', fontsize=18)
             axes[0, 0].set_ylabel('Ánimo Promedio (1-5)')
+            axes[0, 0].xaxis.set_major_formatter(mdates.DateFormatter(date_format))
             axes[0, 0].grid(True, alpha=0.3)
             axes[0, 0].tick_params(axis='x', rotation=90)
         
@@ -167,8 +172,9 @@ class VisualizationGenerator:
         if 'wellness_score_mean' in trends_df.columns:
             axes[0, 1].plot(trends_df['date'], trends_df['wellness_score_mean'], 
                            marker='s', linewidth=2, color='green')
-            axes[0, 1].set_title('Tendencia del Bienestar Promedio')
+            axes[0, 1].set_title('Tendencia del Bienestar Promedio', fontsize=18)
             axes[0, 1].set_ylabel('Bienestar Promedio (1-5)')
+            axes[0, 1].xaxis.set_major_formatter(mdates.DateFormatter(date_format))
             axes[0, 1].grid(True, alpha=0.3)
             axes[0, 1].tick_params(axis='x', rotation=90)
         
@@ -176,16 +182,18 @@ class VisualizationGenerator:
         if 'mood_count' in trends_df.columns:
             axes[1, 0].bar(trends_df['date'], trends_df['mood_count'], 
                           alpha=0.7, color='orange')
-            axes[1, 0].set_title('Número de Encuestas por Día')
+            axes[1, 0].set_title('Número de Encuestas por Día', fontsize=18)
             axes[1, 0].set_ylabel('Número de Encuestas')
+            axes[1, 0].xaxis.set_major_formatter(mdates.DateFormatter(date_format))
             axes[1, 0].tick_params(axis='x', rotation=90)
         
         # Gráfico 4: Alertas de crisis por día
         if 'crisis_alert_sum' in trends_df.columns:
             axes[1, 1].bar(trends_df['date'], trends_df['crisis_alert_sum'], 
                           alpha=0.7, color='red')
-            axes[1, 1].set_title('Alertas de Crisis por Día')
+            axes[1, 1].set_title('Alertas de Crisis por Día', fontsize=18)
             axes[1, 1].set_ylabel('Número de Alertas')
+            axes[1, 1].xaxis.set_major_formatter(mdates.DateFormatter(date_format))
             axes[1, 1].tick_params(axis='x', rotation=90)
         
         plt.tight_layout()
@@ -224,20 +232,25 @@ class VisualizationGenerator:
             autopct='%1.1f%%',
             startangle=90
         )
-        axes[0, 0].set_title('Distribución por Género')
+        axes[0, 0].set_title('Distribución por Género', fontsize=18)
         
         # Gráfico 2: Edad promedio por género
         if 'age_by_gender' in gender_analysis:
             age_data = pd.DataFrame(gender_analysis['age_by_gender']).T
-            age_data['mean'].plot(
+            print(f"age_data:\n{age_data}")
+            ax = age_data['mean'].plot(
                 kind='bar',
-                yerr=age_data['max'] - age_data['min'],
+                #yerr=age_data['max'] - age_data['min'],
                 ax=axes[0, 1],
                 color='skyblue',
                 capsize=5
             )
-            axes[0, 1].set_title('Edad Promedio por Género')
+            axes[0, 1].set_title('Edad Promedio por Género', fontsize=18)
             axes[0, 1].set_ylabel('Edad')
+            # Agregar etiquetas encima de cada barra
+            for container in ax.containers:
+                ax.bar_label(container, fmt='%.2f', label_type='edge', padding=3)
+            
             
         # Gráfico 3: Bienestar promedio por género
         if 'wellness_by_gender' in gender_analysis:
@@ -246,28 +259,36 @@ class VisualizationGenerator:
                 'Bienestar': wellness_data.loc['wellness_score', 'mean'],
                 'Estado de Ánimo': wellness_data.loc['mood', 'mean']
             })
-            wellness_metrics.plot(
+            ax = wellness_metrics.plot(
                 kind='bar',
                 ax=axes[1, 0],
-                color=['green', 'orange']
+                color=['green', 'orange'],
+                alpha=0.7
             )
-            axes[1, 0].set_title('Indicadores de Bienestar por Género')
+            axes[1, 0].set_title('Indicadores de Bienestar por Género', fontsize=18)
             axes[1, 0].set_ylabel('Puntuación Promedio')
+            # Agregar etiquetas encima de cada barra
+            for container in ax.containers:
+                ax.bar_label(container, fmt='%.2f', label_type='edge', padding=3)
         
         # Gráfico 4: Tasa de crisis por género
         if 'crisis_by_gender' in gender_analysis:
             crisis_data = pd.DataFrame(gender_analysis['crisis_by_gender'])
+            print(f"crisis_data: \n{crisis_data}")
             if 'users_with_crisis' in crisis_data.columns:
-                crisis_rate = (crisis_data['users_with_crisis'] / 
-                             crisis_data['total_users'] * 100).round(1)
-                crisis_rate.plot(
+                crisis_rate = (crisis_data['total_users'] / 
+                            crisis_data['users_with_crisis'] * 100).round(1)
+                print(f"crisis_rate: \n{crisis_rate}")
+                ax = crisis_rate.plot(
                     kind='bar',
                     ax=axes[1, 1],
                     color='red',
                     alpha=0.7
                 )
-                axes[1, 1].set_title('Tasa de Crisis por Género')
+                axes[1, 1].set_title('Tasa de Crisis por Género', fontsize=18)
                 axes[1, 1].set_ylabel('Porcentaje de Usuarios (%)')
+                for container in ax.containers:
+                    ax.bar_label(container, fmt='%.2f', label_type='edge', padding=3)
         
         plt.tight_layout()
         
@@ -319,7 +340,7 @@ class VisualizationGenerator:
                     cbar_kws={'shrink': 0.8})
         
         plt.title('Matriz de Correlaciones - Indicadores Emocionales', 
-                  fontsize=16, pad=20)
+                  fontsize=18, pad=20)
         plt.tight_layout()
         
         filename = f"correlation_heatmap_{datetime.now().strftime('%Y%m%d_%H%M%S')}.{self.output_format}"
@@ -350,7 +371,7 @@ class VisualizationGenerator:
         axes[0, 0].hist(user_analysis['avg_wellness'], bins=10, alpha=0.7, color='red')
         axes[0, 0].axvline(3.0, color='darkred', linestyle='--', 
                           label='Umbral de Riesgo (3.0)')
-        axes[0, 0].set_title('Distribución de Puntuaciones de Bienestar')
+        axes[0, 0].set_title('Distribución de Puntuaciones de Bienestar', fontsize=18)
         axes[0, 0].set_xlabel(self.LABEL_BIENESTAR)
         axes[0, 0].set_ylabel('Número de Usuarios')
         axes[0, 0].legend()
@@ -359,7 +380,7 @@ class VisualizationGenerator:
         # Gráfico 2: Relación entre edad y bienestar
         scatter = axes[0, 1].scatter(user_analysis['age'], user_analysis['avg_wellness'], 
                                     c=user_analysis['crisis_rate'], cmap='RdYlGn', alpha=0.6)
-        axes[0, 1].set_title('Relación Edad vs Bienestar')
+        axes[0, 1].set_title('Relación Edad vs Bienestar', fontsize=18)
         axes[0, 1].set_xlabel('Edad')
         axes[0, 1].set_ylabel(self.LABEL_BIENESTAR)
         plt.colorbar(scatter, ax=axes[0, 1], label='Tasa de Crisis (%)')
@@ -393,8 +414,12 @@ class VisualizationGenerator:
                 # Filtrar por bajo bienestar (menor a 3.0)
                 low_wellness = surveys_with_context[surveys_with_context['wellness_score'] < 3.0]
                 if not low_wellness.empty:
+                    print(f"low_wellness:\n{low_wellness}")
                     context_counts = low_wellness['context'].value_counts().head(5)
-                    axes[1, 1].barh(context_counts.index, context_counts.values, color='orange')
+                    print(f"context_counts:{context_counts}")
+                    wrapped_labels = [textwrap.fill(label.capitalize(), width=20, break_long_words=False) 
+                            for label in context_counts.index]
+                    axes[1, 1].barh(wrapped_labels, context_counts.values, color='orange')
                     axes[1, 1].set_title('Contextos con Menor Nivel de Bienestar')
                     axes[1, 1].set_xlabel('Número de Encuestas')
         
@@ -454,15 +479,16 @@ class VisualizationGenerator:
             # Ajustar el tamaño de las etiquetas
             plt.setp(texts, size=9)
             plt.setp(autotexts, size=8)
-            axes[0, 0].set_title('Distribución de Usuarios por Contexto')
+            axes[0, 0].set_title('Distribución de Usuarios por Contexto', fontsize=18)
         
         # Gráfico 2: Edad promedio por contexto
         if 'context' in users_df.columns and 'age' in users_df.columns:
             context_age = users_df.groupby('context')['age'].mean()
+            print(f"context_age:\n{context_age}")
             # Usar los colores ya inicializados
             context_colors = [self.context_colors.get(context, '#CCCCCC') for context in context_age.index]
             axes[0, 1].bar(range(len(context_age)), context_age.values, color=context_colors)
-            axes[0, 1].set_title('Edad Promedio por Contexto')
+            axes[0, 1].set_title('Edad Promedio por Contexto', fontsize=18)
             axes[0, 1].set_ylabel('Edad Promedio')
             # Ajustar etiquetas del eje x
             axes[0, 1].set_xticks(range(len(context_age)))
@@ -481,13 +507,14 @@ class VisualizationGenerator:
             )
             if 'wellness_score' in surveys_with_context.columns:
                 context_wellness = surveys_with_context.groupby('context')['wellness_score'].mean()
+                print(f"context_wellness\n{context_wellness}")
                 # Usar los colores ya inicializados
                 context_colors = [self.context_colors.get(context, '#CCCCCC') for context in context_wellness.index]
                 bars = axes[1, 0].bar(range(len(context_wellness)), context_wellness.values, 
                                     color=context_colors, alpha=0.8)
                 axes[1, 0].axhline(y=self.UMBRAL_RIESGO, color='red', linestyle='--', 
                                   label='Umbral de Riesgo')
-                axes[1, 0].set_title('Puntuación de Bienestar Promedio por Contexto')
+                axes[1, 0].set_title('Puntuación de Bienestar Promedio por Contexto', fontsize=18)
                 axes[1, 0].set_ylabel(self.LABEL_BIENESTAR)
                 axes[1, 0].legend()
                 # Ajustar etiquetas del eje x
@@ -510,10 +537,11 @@ class VisualizationGenerator:
             )
             if 'context' in surveys_with_context.columns:
                 context_surveys = surveys_with_context.groupby('context').size()
+                print(f"context_surveys:\n{context_surveys}")
                 # Usar los colores ya inicializados
                 context_colors = [self.context_colors.get(context, '#CCCCCC') for context in context_surveys.index]
                 axes[1, 1].bar(range(len(context_surveys)), context_surveys.values, color=context_colors)
-                axes[1, 1].set_title('Número de Encuestas por Contexto')
+                axes[1, 1].set_title('Número de Encuestas por Contexto', fontsize=18)
                 axes[1, 1].set_ylabel('Número de Encuestas')
                 # Ajustar etiquetas del eje x
                 axes[1, 1].set_xticks(range(len(context_surveys)))
@@ -541,6 +569,161 @@ class VisualizationGenerator:
         print(f"✅ Análisis por contexto guardado: {filepath}")
         return filepath
     
+    def create_avg_emotional_state_by_context(self) -> str:
+        """
+        Genera un gráfico de barras que muestra el estado emocional promedio por contexto.
+        
+        Returns:
+            str: Ruta del archivo generado
+        """
+        # Cargar los datos base
+        users_df, surveys_df = self.analyzer.load_data()
+
+        # Validaciones
+        if surveys_df.empty or 'wellness_score' not in surveys_df.columns:
+            print("❌ No hay datos suficientes en encuestas para generar el gráfico.")
+            return ""
+
+        if 'context' not in users_df.columns:
+            print("❌ No se encontró la columna 'context' en los datos de usuarios.")
+            return ""
+
+        # Combinar encuestas con contexto
+        surveys_with_context = surveys_df.merge(
+            users_df[['user_id', 'context']], on='user_id', how='left'
+        )
+
+        # Calcular promedio por contexto
+        avg_emotional_state = (
+            surveys_with_context.groupby('context')['wellness_score']
+            .mean()
+            .sort_values(ascending=False)
+        )
+
+        if avg_emotional_state.empty:
+            print("❌ No hay datos válidos para graficar el estado emocional por contexto.")
+            return ""
+        print(f"avg_emotional_state:\n{avg_emotional_state}")
+        
+        # Umbral
+        threshold = 3.0
+
+        # Crear colores con transparencia según distancia al umbral
+        colors = []
+        for val in avg_emotional_state.values:
+            if val >= threshold:
+                base_color = mcolors.to_rgba("green")
+            else:
+                base_color = mcolors.to_rgba("red")
+            # Cuanto más cerca del umbral, más transparente
+            alpha = min(1.0, 0.3 + abs(val - threshold) / 2.5)
+            color = (base_color[0], base_color[1], base_color[2], alpha)
+            colors.append(color)
+
+        # Crear índices numéricos para reemplazar textos largos
+        context_labels = avg_emotional_state.index.tolist()
+        numeric_positions = range(1, len(context_labels) + 1)
+
+        # Crear figura
+        plt.figure(figsize=(14, 10))
+        bars = plt.bar(numeric_positions, avg_emotional_state.values, color=colors)
+
+        # Línea de referencia
+        plt.axhline(y=threshold, color='gray', linestyle='--', linewidth=1.5, label=f'Umbral de bienestar ({threshold})')
+
+        # Etiquetas y título
+        plt.title("Estado Emocional Promedio por Contexto", fontsize=18)
+        plt.xlabel("ID de Contexto", fontsize=14)
+        plt.ylabel("Puntuación Promedio de Bienestar", fontsize=14)
+
+        # Mostrar valores sobre cada barra
+        for bar, value in zip(bars, avg_emotional_state.values):
+            plt.text(
+                bar.get_x() + bar.get_width()/2,
+                bar.get_height() + 0.05,
+                f"{value:.2f}",
+                ha='center',
+                va='bottom',
+                fontsize=10
+            )
+
+        plt.xticks(numeric_positions)
+        plt.grid(axis='y', linestyle='--', alpha=0.3)
+        plt.legend()
+
+        plt.tight_layout(rect=[0, 0.35, 1, 1])  # deja espacio para tabla inferior
+
+        # ===== Crear tabla de contextos en 2 columnas =====
+        n = len(context_labels)
+        mid = math.ceil(n / 2)
+
+        # Dividir contextos y colores
+        left_contexts = context_labels[:mid]
+        right_contexts = context_labels[mid:]
+        left_colors = colors[:mid]
+        right_colors = colors[mid:]
+
+        # Preparar filas de la tabla (alinear dos columnas)
+        max_rows = max(len(left_contexts), len(right_contexts))
+        cell_text = []
+        cell_colors = []
+
+        for i in range(max_rows):
+            row = []
+            color_row = []
+            # Columna izquierda
+            if i < len(left_contexts):
+                left_color_hex = mcolors.to_hex(left_colors[i][:3])
+                row.extend([f"{i+1}", left_contexts[i]])
+                color_row.extend([left_color_hex, "white"])
+            else:
+                row.extend(["", ""])
+                color_row.extend(["white", "white"])
+            # Columna derecha
+            if i < len(right_contexts):
+                idx_right = mid + i + 1
+                right_color_hex = mcolors.to_hex(right_colors[i][:3])
+                row.extend([f"{idx_right}", right_contexts[i]])
+                color_row.extend([right_color_hex, "white"])
+            else:
+                row.extend(["", ""])
+                color_row.extend(["white", "white"])
+            cell_text.append(row)
+            cell_colors.append(color_row)
+
+        col_labels = ["ID", "Contexto", "ID", "Contexto"]
+
+        table = plt.table(
+            cellText=cell_text,
+            colLabels=col_labels,
+            cellLoc='left',
+            loc='bottom',
+            colWidths=[0.3, 4, 0.3, 4],
+            colColours=['#f0f0f0'] * 4,
+            cellColours=cell_colors,
+            bbox=[0.05, -0.42, 0.9, 0.3]  # posición y tamaño: x, y, ancho, alto
+        )
+
+        table.auto_set_font_size(False)
+        table.set_fontsize(9)
+
+        # Ajustes visuales
+        for (row, col), cell in table.get_celld().items():
+            cell.set_edgecolor('gray')
+            cell.set_linewidth(0.5)
+            if col in [1, 3]:  # contextos
+                cell._text.set_wrap(True)  # permitir salto de línea
+                cell._text.set_fontsize(8)
+
+        # Guardar archivo
+        filename = f"avg_emotional_state_by_context_{datetime.now().strftime('%Y%m%d_%H%M%S')}.{self.output_format}"
+        filepath = os.path.join(self.output_path, filename)
+        plt.savefig(filepath, dpi=300, bbox_inches='tight', format=self.output_format)
+        plt.close()
+
+        print(f"✅ Gráfico generado y guardado en: {filepath}")
+        return filepath
+
     def create_dashboard_summary(self) -> str:
         """
         Crea un dashboard resumen con múltiples visualizaciones.
@@ -572,6 +755,10 @@ class VisualizationGenerator:
         context_plot = self.create_user_context_analysis()
         if context_plot:
             plots_created.append("Análisis por contexto")
+
+        avg_emotional_state_plot = self.create_avg_emotional_state_by_context()
+        if context_plot:
+            plots_created.append("Análisis estado emocional promedio por contexto")
         
         # Crear un archivo de resumen
         summary_file = os.path.join(
