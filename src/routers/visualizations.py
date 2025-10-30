@@ -1,7 +1,9 @@
-from fastapi import APIRouter, Response, Query
+from fastapi import APIRouter, Response, Query, HTTPException, status
 from fastapi.responses import FileResponse
 from ..analysis.visualizations import VisualizationGenerator
 from ..analysis.data_analyzer import EmotionalDataAnalyzer
+from typing import Dict, Any
+import json
 
 # Constantes reutilizables
 _MSG_NO_DATA = "No hay datos suficientes para generar la visualización"
@@ -23,6 +25,7 @@ class VisualizationType(str, Enum):
     RISK_ANALYSIS = "risk-analysis"
     CONTEXT_ANALYSIS = "context-analysis"
     GENDER_ANALYSIS = "gender-analysis"
+    EMOTIONAL_STATE = "emotional-state"
 
 @router.get("/visualization/{viz_type}", response_class=Response)
 async def get_visualization(
@@ -56,7 +59,9 @@ async def get_visualization(
         VisualizationType.CONTEXT_ANALYSIS: 
             (viz_generator.create_user_context_analysis, "context_analysis"),
         VisualizationType.GENDER_ANALYSIS:
-            (viz_generator.create_gender_analysis_plot, "gender_analysis")
+            (viz_generator.create_gender_analysis_plot, "gender_analysis"),
+        VisualizationType.EMOTIONAL_STATE:
+            (viz_generator.create_avg_emotional_state_by_context, "emotional-state")
     }
     
     # Obtener el método y nombre de archivo correspondiente
@@ -74,3 +79,16 @@ async def get_visualization(
         media_type=_MEDIA_SVG,
         headers={"Content-Disposition": f"inline; filename={filename}.svg"}
     )
+
+@router.get("/statistics")
+async def get_descriptive_statistics():
+    """
+    Endpoint para obtener estadísticas descriptivas de los datos emocionales.
+    
+    Returns:
+        Response: Estadísticas descriptivas en formato JSON
+    """
+    analyzer = EmotionalDataAnalyzer()
+    stats_text = analyzer.generate_descriptive_statistics()
+    stats_json_text = json.dumps(stats_text, default=analyzer.convert_numpy)
+    return json.loads(stats_json_text)

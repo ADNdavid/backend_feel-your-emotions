@@ -27,7 +27,7 @@ root/
 │   ├── services/        # Lógica de negocio
 │   ├── routers/         # Controladores para peticiones HTTP
 │   ├── utils/           # Utilidades y helpers
-│   └── analysis/        # Scripts de análisis
+│   └── analysis/        # Scripts de análisis y generación de gráficos
 ├── data/
 │   ├── raw/             # Datos sin procesar
 │   ├── processed/       # Datos procesados
@@ -39,6 +39,8 @@ root/
 ```
 
 ## 🚀 Instalación y Uso
+
+❗Se requiere que previamente se tenga instalado XAMPP con mySQL, la base de datos debe llamarse _feel_your_emotions_.
 
 1. Clonar el repositorio:
 ```bash
@@ -59,7 +61,7 @@ pip install -r requirements.txt
 
 3. Ejecutar el sistema:
 ```bash
-python fastapi dev
+fastapi dev
 ```
 
 ## 📊 Funcionalidades Principales
@@ -78,10 +80,10 @@ python fastapi dev
 - [x] Sistema de alertas básico
 
 ### Fase 3 (Futuras mejoras)
-- [ ] Algoritmos de ML para detección de riesgo
-- [ ] Recomendaciones personalizadas
-- [ ] Interfaz web completa
-- [ ] Integración con bases de datos
+- [x] Algoritmos de ML para detección de riesgo
+- [x] Recomendaciones personalizadas
+- [x] Interfaz web completa
+- [x] Integración con bases de datos
 
 ## 🌐 Enlaces 
 - **Repositorio Frontend**: [repo](https://github.com/zorany26/frontend_feel-your-emotions)

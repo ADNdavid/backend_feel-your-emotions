@@ -19,7 +19,7 @@ class DemoGenerator:
         self.user_service = UserService()
         self.survey_service = SurveyService()
 
-    def generate_demo_data(self) -> None:
+    def generate_demo_data(self) -> int:
         """Ejecuta una demostración del sistema con datos de prueba."""
         print("\n🎬 MODO DEMOSTRACIÓN")
         print("="*50)
@@ -98,7 +98,7 @@ class DemoGenerator:
             
             print("\n✅ Datos de demostración creados exitosamente!")
             print("🎯 Ahora puedes explorar todas las funcionalidades del sistema")
-            
+            return len(created_users)
         except Exception as e:
             print(f"❌ Error en modo demostración: {str(e)}")
             raise e
